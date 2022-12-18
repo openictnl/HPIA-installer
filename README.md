@@ -11,9 +11,9 @@ DO NOTE: this script does not wait till the installation is finished or checks i
 ### Start the script
 The script can be started in two main ways:
 1. Clone the repo and run it.
-2. Run direcly from this source via powershell (see warning above ^)
+2. Run directly from this source via powershell (see warning above ^) by pasting the commands below in a powershell window:
 ``` powershell
-$OpenICT_installer_script = Invoke-WebRequest https://github.com/openictnl/HPIA-installer/installer.ps1; Invoke-Expression $($OpenICT_installer_script.Content)
+$OpenICT_installer_script = Invoke-WebRequest "https://raw.githubusercontent.com/openictnl/HPIA-installer/master/installer.ps1"; Invoke-Expression $($OpenICT_installer_script.Content)
 ```
 
 ## Change default installation directory

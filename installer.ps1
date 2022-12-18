@@ -1,5 +1,6 @@
-# OPEN-ICT TOOL!
-# Downloads and installs the HP image assist which then install found drivers. See the README for more information!
+# OPEN ICT TOOL!
+# Downloads and runs the HP image assist which then installs found drivers. See the README for more information!
+# USAGE AT OWN RISK!
 
 # Set the default location where the .exe should be downloaded into, this can be supplied as an argument via the cmdline:
 # .\installer.ps1 -location "<custom path>"
