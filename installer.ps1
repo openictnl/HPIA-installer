@@ -20,11 +20,13 @@ create_directory($location)
 # download and extract the HPIA and extract the exe
 $exe_location = "$location\hpiatool.exe"
 if (-not (Test-path "$exe_location" -PathType leaf) ) {
+    $hp_tool_dir = "$location\hptool_dir"
+    create_directory($hp_tool_dir)
+    # download the latest version
     wget "$version_url" -OutFile "$exe_location" > $null
     Set-Location -Path "$location"
     echo "...extracting image assist!"
-    & ".\hpiatool.exe" /s /e /f  "$location\hptool_dir"
-
+    & ".\hpiatool.exe" /s /e /f  $hp_tool_dir
 } 
 
 # create the logdirs
