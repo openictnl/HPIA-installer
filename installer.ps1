@@ -22,11 +22,12 @@ $exe_location = "$location\hpiatool.exe"
 if (-not (Test-path "$exe_location" -PathType leaf) ) {
     $hp_tool_dir = "$location\hptool_dir"
     create_directory($hp_tool_dir)
+
     # download the latest version
     wget "$version_url" -OutFile "$exe_location" > $null
-    Set-Location -Path "$location"
+    Start-Sleep -Seconds 2
     echo "...extracting image assist!"
-    & ".\hpiatool.exe" /s /e /f  $hp_tool_dir
+    & "$location\hpiatool.exe" /s /e /f  "$hp_tool_dir"
 } 
 
 # create the logdirs
@@ -34,8 +35,7 @@ $hpia_dir = "$location\logdir"
 create_directory("$hpia_dir")
 
 # run the imageassist tool
-Set-Location -Path "$location\hptool_dir"
-& ".\HPImageAssistant.exe" /Operation:Analyze /Action:Install /Silent /SoftpaqDownloadFolder:"$hpia_dir" /ReportFolder:"$hpia_dir"
+& "$location\hptool_dir\HPImageAssistant.exe" /Operation:Analyze /Action:Install /Silent /SoftpaqDownloadFolder:"$hpia_dir" /ReportFolder:"$hpia_dir"
 
 echo "The HP image assist is running in the background... this will take some minutes"
 Start-Sleep -Seconds 5
