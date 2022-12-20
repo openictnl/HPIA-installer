@@ -48,6 +48,7 @@ try {
 }
 catch {
     echo "... Could not complete the installation, shutting down!"
+    Start-Sleep -Seconds 5
     Exit
 }
 
