@@ -8,17 +8,12 @@
 # .\installer.ps1 -location "<custom path>" -cleanup
 
 param (
-    [string] $location = "C:\hpia-silent",
+    [string] $location,
     [switch] $cleanup
 )
 
-# find the download url from the static HPia page
+# find the download url from this static HPia page
 $hpia_main_url = "https://ftp.ext.hp.com/pub/caps-softpaq/cmit/HPIA.html"
-
-# creates a directory at a given path
-function create_directory($path) {
-    md -Force "$path" > $null
-}
 
 # test if the given path exsists
 function path_exsists($path) {
@@ -26,17 +21,16 @@ function path_exsists($path) {
         return $true
     }
 }
-
-# create the root installer dir
-create_directory($location)
+function create_directory($path) {
+    mkdir -Force "$path" > $null
+}
 
 # download and extract the HPIA when the file is not already present on the given path
 $exe_location = "$location\hpiatool.exe"
 if ( -not (path_exsists($exe_location)) ) {
-    echo "... No previous installation found, finding the latest version."
-    create_directory($location)
+    Write-Output "... No previous installation found, finding the latest version."
     # download latest version
-    $version_url = Invoke-RestMethod $hpia_main_url | Select-String -Pattern 'href="(.*hp-hpia-.*.exe)">' | % {"$($_.matches.groups[1])"}
+    $version_url = Invoke-RestMethod $hpia_main_url | Select-String -Pattern 'href="(.*hp-hpia-.*.exe)">' | % { "$($_.matches.groups[1])" }
     wget "$version_url" -OutFile "$exe_location" > $null; Start-Sleep -Seconds 2
 } 
 
@@ -46,8 +40,9 @@ create_directory($hp_extracted_dir)
 try {
     & "$exe_location" /s /e /f "$hp_extracted_dir"; Start-Sleep -Seconds 1
 }
+
 catch {
-    echo "... Could not complete the installation, shutting down!"
+    Write-Output "... Could not complete the installation, shutting down!"
     Start-Sleep -Seconds 5
     Exit
 }
@@ -59,14 +54,15 @@ create_directory($log_dir)
 
 # when no cleanup is set, just exit the program
 if (-not ($cleanup)) {
-    echo "The HPImageAssist is running in the background, this will take a couple of minutes."
+    Write-Output "The HPImageAssist is running in the background, this will take a couple of minutes."
     Start-Sleep -Seconds 5
     Exit
-} else {
-    echo "... Running the HPImageAssist, please wait for it to complete and dont reboot your device!"
+}
+else {
+    Write-Output "... Running the HPImageAssist, please wait! DO NOT REBOOT YOUR DEVICE!"
 }
 
-# # Wait for the installation to complete, then do a cleanup
+# Wait for the installation to complete, then do a cleanup
 function cleanup_data() {
     $retries = 30
     $tries = 0
@@ -74,11 +70,11 @@ function cleanup_data() {
         $tries += 1
         Start-Sleep -Seconds 10
         if ($tries -ge $retries) {
-            echo "The HPImageAssist is still not completed, but script is shutting down because of the time it took!"
+            Write-Output "The HPImageAssist is still not completed, but script is shutting down because of the time it took!"
             return
         } 
     }
-    echo "HPImageAssist is completed, cleaning up!"
+    Write-Output "HPImageAssist finished, cleaning up!"
     # remove the installer and the created dirs (keep created rootdir, since it could be a sensitive one, we dont want to remove C:)
     Get-ChildItem -Path "$location\hpia" -Recurse | Remove-Item -force -recurse > $null
     Remove-Item "$location\hpia" -Force > $null
