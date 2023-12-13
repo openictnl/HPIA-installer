@@ -13,11 +13,10 @@ The script should be started either by:
 ``` powershell
 powershell.exe .\installer.ps1 -location "C:\any\custom\location" -cleanup
 ```
-2. Run it from this repo directly inside a powershell window (with or without params):
+2. Run it from this repo directly inside a powershell window (with or without params) by copy these commands below and paste them in a powershell window:
 ``` powershell
-$OpenICT_installer_script = Invoke-WebRequest "https://raw.githubusercontent.com/openictnl/HPIA-installer/master/installer.ps1"
-$parameters = '-location "C:\hpia-silent" -cleanup'
-Invoke-Expression "$($OpenICT_installer_script.Content) $parameters"
+$script_location = "C:\Temp\installer.ps1"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/openictnl/HPIA-installer/master/installer.ps1" -UseBasicParsing -Outfile "$script_location"; &$("$script_location") -location "C:\OpenFoobar" -cleanup
 ```
 
 ### Commandline parameters
