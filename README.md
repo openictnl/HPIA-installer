@@ -7,10 +7,11 @@ This script downloads files from the internet. Always make sure you trust the so
 
 ## How it Works
 
-The script accepts two optional parameters:
+The script accepts 3 optional parameters:
 
 - `location`: This is the directory where the downloaded files will be stored. The default location is `C:\OpenICT`.
-- `cleanup`: This is a switch parameter. If it's included, the script will clean up the downloaded files after the installation.
+- `cleanup`: This is a switch parameter. If it's included, the script will clean up the downloaded files after the installation. default is false.
+- `eventlog`: This is a switch parameter. If it's included, the script will log events to the Windows Event Log. default is false.
 
 The script first identifies the vendor of the device by querying the BIOS. It then checks if the vendor is supported by looking up a predefined hashtable. If the vendor is supported, the script creates a directory for the installation files and downloads the necessary scripts from the Open ICT repository.
 
@@ -24,9 +25,9 @@ Tested on windows 11 with powershell 7
 You can run the script in PowerShell with the following command (after downloading it locally):
 
 ```powershell
-.\main.ps1 -location "C:\CustomLocation" -cleanup
+.\main.ps1 -location "C:\CustomLocation" -cleanup -eventlog
 ```
-Replace `C:\CustomLocation` with your desired location. Include `-cleanup`  if you want the script to clean up the downloaded files after the installation.
+Replace `C:\CustomLocation` with your desired location. Include `-cleanup`  if you want the script to clean up the downloaded files after the installation and add -eventlog if you want the script to log events to the Windows Event Log.
 
 Or you can run the script directly from this repo with the following command:
 ```powershell
@@ -35,7 +36,7 @@ $scriptUrl = "https://raw.githubusercontent.com/openictnl/HPIA-installer/dev/mul
 # Download the script
 $script = Invoke-WebRequest -Uri $scriptUrl -UseBasicParsing
 # Execute the script with parameters
-Invoke-Expression "& { $script.Content } -cleanup"
+Invoke-Expression "& { $script.Content } -cleanup -eventlog"
 ```
 
 ### Commandline parameters
@@ -43,10 +44,11 @@ Invoke-Expression "& { $script.Content } -cleanup"
 | ------------- | ------------- | ------------- | ------------- |
 | -location | string | C:\OpenICT | The location where the files will be downloaded / stored
 | -cleanup | bool | false | When this flag is supplied the downloaded items will be cleaned
+| -eventlog | bool | false | When this flag is supplied the script will log events to the Windows Event Log
 
 
 ## Examples
-To specify a custom location for the downloaded files:
+To specify a custom location for the downloaded files without cleaning up the files after the installation and to not write out an event to the Windows Event Log, run the following command:
 ```powershell
 .\main.ps1 -location "C:\MyCustomLocation"
 ```

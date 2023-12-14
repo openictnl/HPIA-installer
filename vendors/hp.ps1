@@ -4,16 +4,26 @@
 
 param (
     [string]$location = "C:\OpenICT",
-    [switch]$cleanup = $false
+    [switch]$cleanup = $false,
+    [switch]$eventlog = $false
 )
 
 # find the download url from this static HPia page
 $hpia_main_url = "https://ftp.ext.hp.com/pub/caps-softpaq/cmit/HPIA.html"
-#
+
+
 function Write-Log($message, $entrytype = "Information") {
+    $app_name = "HPIA-installer-HP"
     Write-Output $message # The acceptable values for this parameter are: Error, Warning, Information, SuccessAudit, and FailureAudit.
-    Write-EventLog -LogName Application -Source "HPIA-installer-HP" -EntryType $entrytype -EventId 002 -Message $message
+    if (-not $eventlog) {
+        return
+    }
+    if (-not (Get-EventLog -LogName Application -Source $app_name)) {
+        New-EventLog -LogName Application -Source $app_name
+    }
+    Write-EventLog -LogName Application -Source $app_name -EntryType $entrytype -EventId 002 -Message $message
 }
+
 # test if the given path exists
 function PathExists($path) {
     if (Test-Path -Path "$path") {
@@ -28,15 +38,19 @@ function CreateDirectory($path) {
 # download and extract the HPIA when the file is not already present on the given path
 $exe_location = "$location\hpiatool.exe"
 if ( -not (PathExists($exe_location)) ) {
-    Write-Logq "No previous installation found, searching for the latest version."
+    Write-Log "No previous installation found, searching for the latest version."
     # download latest version
     $version_url = Invoke-RestMethod $hpia_main_url | Select-String -Pattern 'href="(.*hp-hpia-.*.exe)">' | ForEach-Object { "$($_.matches.groups[1])" }
-    wget "$version_url" -OutFile "$exe_location" > $null; Start-Sleep -Seconds 2
+    Write-Log "Found the latest version, downloading: $version_url"
+    New-Item -Path $exe_location -ItemType File -Force > $null
+    Invoke-WebRequest -Uri $version_url -OutFile $exe_location
+    Start-Sleep -Seconds 2
 } 
 
 # create extraction dir and extract
 $hp_extracted_dir = Join-Path -Path $location -ChildPath "hpia\extracted"
 CreateDirectory($hp_extracted_dir)
+
 try {
     & "$exe_location" /s /e /f "$hp_extracted_dir"; Start-Sleep -Seconds 1
 }

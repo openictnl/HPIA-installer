@@ -5,7 +5,8 @@
 # The optional parameters that can be supplied
 param (
     [string]$location = "C:\OpenICT",
-    [switch]$cleanup = $false
+    [switch]$cleanup = $false,
+    [switch]$eventlog = $false
 )
 
 # define vendor hashtable, if not in this dict then exit directly
@@ -16,8 +17,15 @@ $vendor_dict = @{
 $root_repo_dir = "https://raw.githubusercontent.com/openictnl/HPIA-installer/dev/multiple-vendors"
 
 function Write-Log($message, $entrytype = "Information") {
+    $app_name = "HPIA-installer-MAIN"
     Write-Output $message # The acceptable values for this parameter are: Error, Warning, Information, SuccessAudit, and FailureAudit.
-    Write-EventLog -LogName Application -Source "HPIA-installer-MAIN" -EntryType $entrytype -EventId 001 -Message $message
+    if (-not $eventlog) {
+        return
+    }
+    if (-not (Get-EventLog -LogName Application -Source $app_name)) {
+        New-EventLog -LogName Application -Source $app_name
+    }
+    Write-EventLog -LogName Application -Source $app_name -EntryType $entrytype -EventId 001 -Message $message
 }
 
 
@@ -52,5 +60,5 @@ catch {
 }
 
 # run the downloaded script
-& $vendor_script_uri -location $location -cleanup $cleanup
+& $vendor_script_uri -location $location -cleanup $cleanup -eventlog $eventlog
 Write-Log "Started the $vendor installer script."
