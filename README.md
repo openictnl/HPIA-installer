@@ -32,7 +32,7 @@ Replace `C:\CustomLocation` with your desired location. Include `-cleanup`  if y
 Or you can run the script directly from this repo with the following command:
 ```powershell
 # Define the URL of the script
-$scriptUrl = "https://raw.githubusercontent.com/openictnl/HPIA-installer/dev/multiple-vendors/main.ps1"
+$scriptUrl = "https://raw.githubusercontent.com/openictnl/HPIA-installer/master/main.ps1"
 # Download the script
 $script = Invoke-WebRequest -Uri $scriptUrl -UseBasicParsing
 # Execute the script with parameters

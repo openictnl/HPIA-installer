@@ -12,7 +12,7 @@ $vendor_dict = @{
     HP     = "vendors/hp.ps1";
     LENOVO = "lenovo/url" 
 }
-$root_repo_dir = "https://raw.githubusercontent.com/openictnl/HPIA-installer/master/main.ps1"
+$root_repo_dir = "https://raw.githubusercontent.com/openictnl/HPIA-installer/master"
 
 function Write-Log($message, $entrytype = "Information") {
     $app_name = "HPIA-installer-MAIN"
