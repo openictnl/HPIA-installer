@@ -2,14 +2,12 @@
 # Downloads and runs the vendors software (softpaqs, drivers etc) and then, silently, installs the found updates. See the README in the repo for more information!
 # USE SCRIPT AT YOUR OWN RISK!
 
-# The optional parameters that can be supplied
 param (
     [string]$location = "C:\OpenICT",
     [switch]$cleanup = $false,
     [switch]$eventlog = $false
 )
 
-# define vendor hashtable, if not in this dict then exit directly
 $vendor_dict = @{
     HP     = "vendors/hp.ps1";
     LENOVO = "lenovo/url" 
@@ -28,8 +26,49 @@ function Write-Log($message, $entrytype = "Information") {
     Write-EventLog -LogName Application -Source $app_name -EntryType $entrytype -EventId 001 -Message $message
 }
 
+function CreateDirectory($path) {
+    mkdir -Force "$path" > $null
+}
 
-# get the vendorname from the device
+function DownloadScript($url, $script_path) {
+    New-Item -Path $script_path -ItemType File -Force > $null
+    Invoke-WebRequest -Uri $url -OutFile $script_path
+}
+
+function InstallVendorSoftware($vendor, $location, $cleanup, $eventlog) {
+    $install_dir = Join-Path -Path $location -ChildPath $vendor
+    CreateDirectory $install_dir
+
+    $vendor_script_uri = $root_repo_dir + "/" + $($vendor_dict[$vendor])
+    $scriptname = $vendor.ToLower() + "_installer.ps1"
+    $script_path = Join-Path -Path $install_dir -ChildPath $scriptname
+
+    try {
+        DownloadScript $vendor_script_uri $script_path
+    }
+    catch {
+        Write-Log "Could not download the script from the repo, please check the internet connection and try again!" "Error"
+        exit
+    }
+
+    $script_parameters = "-location $location"
+    if ($eventlog) {
+        $script_parameters += " -eventlog"
+    }
+
+    if ($cleanup) {
+        $script_parameters += " -cleanup"
+        Start-Process powershell.exe -Verb RunAs -ArgumentList "-ExecutionPolicy Bypass -File `"$script_path`" $script_parameters" -Wait
+        Write-Log "Cleanup enabled, removing the installation directory: $install_dir"
+        Remove-Item -Path $install_dir -Recurse -Force > $null
+    }
+    else {
+        Write-log "Starting the $vendor firmware installer in the background, please wait for it to complete!"
+        Start-Process powershell.exe -Verb RunAs -ArgumentList "-ExecutionPolicy Bypass -File `"$script_path`" $script_parameters"
+    }
+}
+
+# Get the vendorname from the device
 $vendor = (Get-WmiObject Win32_BIOS).Manufacturer
 
 if (-Not $vendor_dict.ContainsKey($vendor)) {
@@ -37,28 +76,4 @@ if (-Not $vendor_dict.ContainsKey($vendor)) {
     exit
 }
 
-# build installer directory
-function CreateDirectory($path) {
-    mkdir -Force "$path" > $null
-}
-$install_dir = Join-Path -Path $location -ChildPath $vendor
-CreateDirectory $install_dir
-
-
-function DownloadScript($url, $script_path) {
-    Invoke-WebRequest -Uri $url -OutFile $path
-}
-
-try {
-    $vendor_script_uri = $root_repo_dir + "/" + $($vendor_dict[$vendor])
-    $script_path = Join-Path -Path $install_dir -ChildPath $vendor.ToLower() + "_installer.ps1"
-    DownloadScript $vendor_script_uri $script_path
-}
-catch {
-    Write-Log "Could not download the script from the repo, please check the internet connection and try again!" "Error"
-    exit
-}
-
-# run the downloaded script
-& $vendor_script_uri -location $location -cleanup $cleanup -eventlog $eventlog
-Write-Log "Started the $vendor installer script."
+InstallVendorSoftware $vendor $location $cleanup $eventlog
