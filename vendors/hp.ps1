@@ -74,7 +74,7 @@ function StartImageAssist($hp_extracted_dir, $log_dir) {
     $hpia_exe = Join-Path -Path $hp_extracted_dir -ChildPath "HPImageAssistant.exe"
     try {
         Write-Host "Starting the HPImageAssist, please wait for it to complete!"
-        & "$hpia_exe" /Operation:Analyze /Action:Install /Silent /LogDir:"$log_dir" /SoftpaqDownloadFolder:"$log_dir" /ReportFolder:"$log_dir"; Start-Sleep -Seconds 2
+        & "$hpia_exe" /Operation:Analyze /category:bios,drivers /action:install /LogDir:"$log_dir" /SoftpaqDownloadFolder:"$log_dir" /ReportFolder:"$log_dir"; Start-Sleep -Seconds 2
     }
     catch {
         Write-Log "Could not start the HPImageAssist, stopping the installation!" "Error"
